@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:tools="http://schemas.android.com/tools" xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@color/white" />
+    <corners
+        android:radius="24dp"
+        android:color="@color/black" tools:ignore="StateListReachable" />
+    <stroke android:color="@color/black" />
+</selector>
