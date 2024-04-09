@@ -34,6 +34,3 @@ To run the MS WhatsApp application on your Android device, follow these steps:
 
 Contributions to MS WhatsApp are welcome! If you encounter any bugs or have suggestions for new features, please submit an issue or pull request on GitHub.
 
-## License
-
-This project is licensed under the MIT License.
