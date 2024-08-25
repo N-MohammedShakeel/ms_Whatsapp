@@ -2,6 +2,7 @@ package com.example.ms_whatsapp.fragments
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -14,81 +15,82 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.ms_whatsapp.R
 import com.example.ms_whatsapp.Utils
 import com.example.ms_whatsapp.adapter.MessageAdapter
 import com.example.ms_whatsapp.databinding.FragmentChatBinding
-import com.example.ms_whatsapp.modal.Messages
 import com.example.ms_whatsapp.mvvm.ChatAppViewModel
 import de.hdodenhof.circleimageview.CircleImageView
 
 class ChatFragment : Fragment() {
-    lateinit var args: ChatFragmentArgs
-    lateinit var chatbinding : FragmentChatBinding
 
-    lateinit var chatAppviewModel : ChatAppViewModel
-    lateinit var adapter : MessageAdapter
-    lateinit var chattoolbar: Toolbar
+    lateinit var users: ChatFragmentArgs
+    lateinit var binding: FragmentChatBinding
+    lateinit var viewModel: ChatAppViewModel
+    lateinit var adapter: MessageAdapter
+    lateinit var toolbar: Toolbar
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        chatbinding = DataBindingUtil.inflate(inflater, R.layout.fragment_chat, container, false)
-
-        return chatbinding.root
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_chat, container, false)
+        return binding.root
     }
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        chattoolbar = view.findViewById(R.id.toolBarChat)
-        val circleImageView = chattoolbar.findViewById<CircleImageView>(R.id.chatImageViewUser)
-        val tvUserName = chattoolbar.findViewById<TextView>(R.id.chatUserName)
-        val tvStatus = view.findViewById<TextView>(R.id.chatUserStatus)
-        val chatBackBtn = chattoolbar.findViewById<ImageView>(R.id.chatBackBtn)
+        toolbar = view.findViewById(R.id.toolBarChat)
+        val circleImageView = toolbar.findViewById<CircleImageView>(R.id.chatImageViewUser)
+        val textViewName = toolbar.findViewById<TextView>(R.id.chatUserName)
+        val textViewStatus = view.findViewById<TextView>(R.id.chatUserStatus)
+        val chatBackBtn = toolbar.findViewById<ImageView>(R.id.chatBackBtn)
 
-        chatAppviewModel = ViewModelProvider(this).get(ChatAppViewModel::class.java)
-        args = ChatFragmentArgs.fromBundle(requireArguments())
+        viewModel = ViewModelProvider(this).get(ChatAppViewModel::class.java)
 
-        chatbinding.viewModel = chatAppviewModel
-        chatbinding.lifecycleOwner = viewLifecycleOwner
+        val users = ChatFragmentArgs.fromBundle(requireArguments()).users
 
-        Glide.with(requireContext()).load(args.users.imageUrl!!).into(circleImageView);
-        tvUserName.setText(args.users.username)
-        tvStatus.setText(args.users.status)
+        // Setting up the RecyclerView and its adapter
+        val rvMessages: RecyclerView = view.findViewById(R.id.rvMessages)
+        adapter = MessageAdapter() // Initialize the adapter
+
+        // Setting up the LinearLayoutManager for the RecyclerView
+        val layoutManager = LinearLayoutManager(activity)
+        rvMessages.layoutManager = layoutManager
+        rvMessages.adapter = adapter
+
+        binding.viewModel = viewModel
+        binding.lifecycleOwner = viewLifecycleOwner
+
+        Glide.with(view.context)
+            .load(users.imageUrl)
+            .placeholder(R.drawable.person)
+            .into(circleImageView)
+
+        textViewName.text = users.username
+        textViewStatus.text = users.status
 
         chatBackBtn.setOnClickListener {
             view.findNavController().navigate(R.id.action_chatFragment_to_homefragment)
-
         }
 
-        chatbinding.sendBtn.setOnClickListener {
-             chatAppviewModel.sendMessage(Utils.getUidLoggedIn(), args.users.userid!!, args.users.username!!, args.users.imageUrl!!)
-
+        binding.sendBtn.setOnClickListener {
+            viewModel.sendMessage(Utils.getUidLoggedIn(),
+                users.userid.toString(), users.username.toString(), users.imageUrl.toString()
+            )
         }
 
-        chatAppviewModel.getMessages(args.users.userid!!).observe(viewLifecycleOwner, Observer {
-
-            initRecyclerView(it)
-
+        viewModel.getMessages(users.userid.toString()).observe(viewLifecycleOwner, Observer { messages ->
+            messages?.let {
+                Log.d("ChatFragment", "Messages received: ${messages.size}")
+                adapter.setList(messages)
+                rvMessages.scrollToPosition(adapter.itemCount - 1) // Scroll to bottom
+            }
         })
-    }
-
-    private fun initRecyclerView(list: List<Messages>) {
-        adapter = MessageAdapter()
-        adapter.setMessageList(list)
-
-        val layoutManager = LinearLayoutManager(context)
-
-        chatbinding.messagesRecyclerView.layoutManager = layoutManager
-        layoutManager.stackFromEnd = true
-
-        adapter.notifyDataSetChanged()
-        chatbinding.messagesRecyclerView.adapter = adapter
-
     }
 }

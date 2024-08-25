@@ -17,7 +17,7 @@ import com.example.ms_whatsapp.notifications.entity.NotificationData
 import com.example.ms_whatsapp.notifications.entity.PushNotification
 import com.example.ms_whatsapp.notifications.network.RetrofitInstance
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.CoroutineExceptionHandler
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -31,37 +31,30 @@ class ChatAppViewModel: ViewModel() {
     val messageRepo = MessageRepo()
     val chatListRepo = ChatListRepo()
 
-
     init {
         getCurrentUser()
         getRecentUsers()
     }
 
-    // here we get all the users
     fun getUsers(): LiveData<List<Users>> {
-        return usersRepo.getUsers() // here the getuser() holds the value of object for each document from the user repo
+        return usersRepo.getUsers()
     }
 
-    // here we get users information
     private fun getCurrentUser() = viewModelScope.launch(Dispatchers.IO) {
-
         val context = MyApplication.instance.applicationContext
-        // To fetch the document of the user who logged in
         firestore.collection("Users").document(Utils.getUidLoggedIn())
             .addSnapshotListener { value, error ->
-
-                if (error != null){
+                if (error != null) {
                     return@addSnapshotListener
                 }
 
-                if (value!!.exists() || value != null) {
+                if (value != null && value.exists()) {
                     val users = value.toObject(Users::class.java)
-                    name.value = users?.username!!
-                    imageUrl.value = users.imageUrl!!
+                    name.value = users?.username ?: ""
+                    imageUrl.value = users?.imageUrl ?: ""
 
                     val mySharedPrefs = SharedPrefs(context)
-                    mySharedPrefs.setValue("username", users.username)
-
+                    mySharedPrefs.setValue("username", users?.username ?: "")
                 }
             }
     }
@@ -156,20 +149,20 @@ class ChatAppViewModel: ViewModel() {
 
 
 
-    fun getMessages(friendid: String): LiveData<List<Messages>> {
-        return messageRepo.getMessages(friendid)
-    }
+    fun getMessages(friendid: String): LiveData<List<Messages>> =
+        messageRepo.getMessages(friendid).also {
+            it.observeForever { messages ->
+                Log.d("ChatAppViewModel", "Messages fetched: ${messages.size}")
+            }
+        }
 
     fun getRecentUsers(): LiveData<List<RecentChats>> {
         return chatListRepo.getAllChatList()
-
     }
 
     fun updateProfile() = viewModelScope.launch(Dispatchers.IO) {
-
         val context = MyApplication.instance.applicationContext
-        val hashMapUser =
-            hashMapOf<String, Any>("username" to name.value!!, "imageUrl" to imageUrl.value!!)
+        val hashMapUser = hashMapOf<String, Any>("username" to name.value.orEmpty(), "imageUrl" to imageUrl.value.orEmpty())
 
         firestore.collection("Users").document(Utils.getUidLoggedIn()).update(hashMapUser)
             .addOnCompleteListener {
@@ -181,32 +174,24 @@ class ChatAppViewModel: ViewModel() {
         val mysharedprefs = SharedPrefs(context)
         val friendid = mysharedprefs.getValue("friendid")
 
-        val hashMapUpdate = hashMapOf<String,Any>("friendsImage" to imageUrl.value!!,"name" to name.value!! , "person" to name.value!!)
+        val hashMapUpdate = hashMapOf<String, Any>("friendsImage" to imageUrl.value.orEmpty(), "name" to name.value.orEmpty(), "person" to name.value.orEmpty())
 
-      if (friendid != null){
-          firestore.collection("Conversation${friendid}").document(Utils.getUidLoggedIn()).update(hashMapUpdate)
-
-          firestore.collection("Conversation${Utils.getUidLoggedIn()}").document(friendid!!).update("person","you")
-
-      }
+        if (friendid != null) {
+            firestore.collection("Conversation${friendid}").document(Utils.getUidLoggedIn()).update(hashMapUpdate)
+            firestore.collection("Conversation${Utils.getUidLoggedIn()}").document(friendid).update("person", "you")
+        }
     }
 
     private fun sendNotification(notification: PushNotification) = viewModelScope.launch {
         try {
             val response = RetrofitInstance.api.postNotification(notification)
+            if (response.isSuccessful) {
+                Log.d("Notification", "Notification sent successfully")
+            } else {
+                Log.e("Notification", "Failed to send notification")
+            }
         } catch (e: Exception) {
-
             Log.e("ViewModelError", e.toString())
-            // showToast(e.message.toString())
         }
     }
-
 }
-
-
-
-
-
-
-
-

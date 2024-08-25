@@ -33,13 +33,16 @@ class UserAdapter : RecyclerView.Adapter<UserHolder>() {
         val name = users.username!!.split("\\s".toRegex())[0] // we only need firstname of the username to set profilename so,removing lastname
         holder.profileName.setText(name)
 
-        if (users.status.equals("Online")){
-            holder.statusImageView.setImageResource(R.drawable.onlinestatus)
-        } else {
-            holder.statusImageView.setImageResource(R.drawable.offlinestatus)
+        // Set status image based on user status
+        when (users.status) {
+            "Online" -> holder.statusImageView.setImageResource(R.drawable.onlinestatus)
+            "Offline" -> holder.statusImageView.setImageResource(R.drawable.offlinestatus)
+            else -> holder.statusImageView.setImageDrawable(null) // Clear image if status is unknown
         }
 
-        Glide.with(holder.itemView.context).load(users.imageUrl).into(holder.imageProfile) // using glide for image processing
+        Glide.with(holder.itemView.context)
+            .load(users.imageUrl)
+            .into(holder.imageProfile) // using glide for image processing
 
         holder.itemView.setOnClickListener {
             listener?.onUserSelected(position, users)

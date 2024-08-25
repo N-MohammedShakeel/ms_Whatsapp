@@ -30,13 +30,9 @@ class MessageRepo {
                 if (!snapshot!!.isEmpty) {
                     snapshot.documents.forEach { document ->
                         val messageModel = document.toObject(Messages::class.java)
-                        if (messageModel!!.sender.equals(Utils.getUidLoggedIn()) && messageModel.receiver.equals(
-                                friendid
-                            ) ||
-                            messageModel.sender.equals(friendid) && messageModel.receiver.equals(
-                                Utils.getUidLoggedIn()
-                            )
-                        ) {
+                        if (messageModel!!.sender.equals(Utils.getUidLoggedIn()) && messageModel.receiver.equals(friendid) ||
+                            messageModel.sender.equals(friendid) && messageModel.receiver.equals(Utils.getUidLoggedIn()))
+                        {
                             messageModel.let {
                                 messagesList.add(it!!)
                             }

@@ -1,6 +1,5 @@
 package com.example.ms_whatsapp.adapter
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,81 +9,42 @@ import com.example.ms_whatsapp.R
 import com.example.ms_whatsapp.Utils
 import com.example.ms_whatsapp.modal.Messages
 
+class MessageAdapter : RecyclerView.Adapter<MessageHolder>() {
 
-class LeftMessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    private val lmessageText: TextView = itemView.findViewById(R.id.show_message)
-    private val ltimeOfSent: TextView = itemView.findViewById(R.id.timeView)
-
-    fun bindMessage(message: String, time: String) {
-        lmessageText.visibility = View.VISIBLE
-        ltimeOfSent.visibility = View.VISIBLE
-        lmessageText.text = message
-        ltimeOfSent.text = time.substring(0, minOf(time.length, 5))
-    }
-}
-
-class RightMessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    private val messageText: TextView = itemView.findViewById(R.id.rightshow_message)
-    private val timeOfSent: TextView = itemView.findViewById(R.id.righttimeView)
-
-    fun bindMessage(message: String, time: String) {
-        messageText.visibility = View.VISIBLE
-        timeOfSent.visibility = View.VISIBLE
-        messageText.text = message
-        timeOfSent.text = time.substring(0, minOf(time.length, 5))
-    }
-}
-
-class MessageAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
-    private var listOfMessage = listOf<Messages>()
-
+    private var listOfMessage: List<Messages> = listOf()
+    private val LEFT = 0
     private val RIGHT = 1
-    private val LEFT = 2
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return if (viewType == 1) {
-            val view =
-                LayoutInflater.from(parent.context).inflate(R.layout.chatitemright, parent, false)
-            RightMessageViewHolder(view)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        val view = if (viewType == RIGHT) {
+            inflater.inflate(R.layout.chatitemright, parent, false)
         } else {
-            val view =
-                LayoutInflater.from(parent.context).inflate(R.layout.chatitemleft, parent, false)
-            LeftMessageViewHolder(view)
+            inflater.inflate(R.layout.chatitemleft, parent, false)
         }
+        return MessageHolder(view)
     }
 
+    override fun getItemCount(): Int = listOfMessage.size
 
-    override fun getItemCount(): Int {
-        return listOfMessage.size
+    override fun onBindViewHolder(holder: MessageHolder, position: Int) {
+        val message = listOfMessage[position]
+        holder.messageText.text = message.message ?: "No message"
+        holder.timeOfSent.text = message.time?.substring(0, 5) ?: ""
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (listOfMessage[position].sender == Utils.getUidLoggedIn()) {
-            RIGHT
-        } else {
-            LEFT
-        }
+        // Assuming Utils.getUidLoggedIn() returns the current user's ID
+        return if (listOfMessage[position].sender == Utils.getUidLoggedIn()) RIGHT else LEFT
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    fun setMessageList(newList: List<Messages>) {
-        this.listOfMessage = newList.toList()
-        notifyDataSetChanged()
+    fun setList(newList: List<Messages>) {
+        this.listOfMessage = newList
+        notifyDataSetChanged() // Notify the adapter that data has changed
     }
+}
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        val message = listOfMessage[position]
-        when (holder.itemViewType) {
-            RIGHT -> {
-                val rightViewHolder = holder as RightMessageViewHolder
-                rightViewHolder.bindMessage(message.message ?: "", message.time ?: "")
-            }
-
-            LEFT -> {
-                val leftViewHolder = holder as LeftMessageViewHolder
-                leftViewHolder.bindMessage(message.message ?: "", message.time ?: "")
-            }
-        }
-    }
+class MessageHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    val messageText: TextView = itemView.findViewById(R.id.show_message)
+    val timeOfSent: TextView = itemView.findViewById(R.id.timeView)
 }

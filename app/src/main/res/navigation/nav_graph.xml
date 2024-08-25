@@ -33,11 +33,15 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right"/>
+
     </fragment>
     <fragment
         android:id="@+id/chatFragment"
         android:name="com.example.ms_whatsapp.fragments.ChatFragment"
         android:label="ChatFragment" >
+        <argument
+            android:name="users"
+            app:argType="com.example.ms_whatsapp.modal.Users" />
         <action
             android:id="@+id/action_chatFragment_to_homefragment"
             app:destination="@id/homefragment"
@@ -46,9 +50,7 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right"/>
-        <argument
-            android:name="users"
-            app:argType="com.example.ms_whatsapp.modal.Users" />
+
     </fragment>
     <fragment
         android:id="@+id/settingFragment"
