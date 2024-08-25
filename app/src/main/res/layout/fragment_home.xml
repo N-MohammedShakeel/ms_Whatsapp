@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="viewModel"
+            type="com.example.ms_whatsapp.mvvm.ChatAppViewModel" />
+    </data>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/white"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical"
         tools:context=".fragments.HomeFragment">
 
@@ -56,7 +62,6 @@
                 android:orientation="horizontal"
                 android:layout_margin="10dp"
                 android:id="@+id/rvUsers"/>
-
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView

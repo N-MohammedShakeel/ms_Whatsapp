@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
             name="viewModel"
             type="com.example.ms_whatsapp.mvvm.ChatAppViewModel" />
     </data>
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -62,17 +62,17 @@
             android:id="@+id/chatUserStatus"
             android:fontFamily="@font/nunito"/>
 
+
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/messagesRecyclerView"
+            android:id="@+id/rvMessages"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/toolBarChat"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="10dp"
-            android:layout_above="@id/layoutChatbox"
-            android:layout_marginBottom="10dp"
-            />
+            android:layout_above="@+id/layoutChatbox"
+            android:layout_below="@+id/toolBarChat"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="0dp"
+            android:scrollbars="vertical" />
 
 
         <LinearLayout

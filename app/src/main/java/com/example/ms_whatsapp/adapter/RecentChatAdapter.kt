@@ -14,65 +14,53 @@ class RecentChatAdapter : RecyclerView.Adapter<MyChatListHolder>() {
 
     var listOfChats = listOf<RecentChats>()
     private var listener: onRecentChatClicked? = null
-    var chatShitModal = RecentChats()
-
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyChatListHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.recentchatlist, parent, false)
         return MyChatListHolder(view)
-
     }
 
     override fun getItemCount(): Int {
         return listOfChats.size
     }
 
-
-    fun setList(list: List<RecentChats>) {
+    fun setOnRecentChatList(list: List<RecentChats>) {
         this.listOfChats = list
+        notifyDataSetChanged() // Notify adapter that data has changed
     }
 
     override fun onBindViewHolder(holder: MyChatListHolder, position: Int) {
-
         val recentchatlist = listOfChats[position]
 
+        holder.userName.text = recentchatlist.name
 
-        chatShitModal = recentchatlist
+        val themessage = recentchatlist.message?.split(" ")?.take(4)?.joinToString(" ") ?: "No message"
+        val makelastmessage = "${recentchatlist.person}: $themessage"
 
-        holder.userName.setText(recentchatlist.name)
+        holder.lastMessage.text = makelastmessage
 
-        val themessage = recentchatlist.message!!.split(" ").take(4).joinToString(" ")
-        val makelastmessage = "${recentchatlist.person}: ${themessage} "
+        Glide.with(holder.itemView.context)
+            .load(recentchatlist.friendsimage ) // Use a placeholder image if URL is null
+            .into(holder.imageView)
 
-        holder.lastMessage.setText(makelastmessage)
-
-        Glide.with(holder.itemView.context).load(recentchatlist.friendsimage).into(holder.imageView)
-
-        holder.timeView.setText(recentchatlist.time!!.substring(0, 5))
+        holder.timeView.text = recentchatlist.time?.substring(0, 5) ?: "N/A"
 
         holder.itemView.setOnClickListener {
             listener?.getOnRecentChatCLicked(position, recentchatlist)
         }
-
     }
 
     fun setOnRecentChatListener(listener: onRecentChatClicked) {
         this.listener = listener
     }
-    fun setOnRecentList(list: List<RecentChats>){
-        this.listOfChats = list
-    }
-
 }
 
 class MyChatListHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
     val imageView: CircleImageView = itemView.findViewById(R.id.recentChatImageView)
     val userName: TextView = itemView.findViewById(R.id.recentChatTextName)
     val lastMessage: TextView = itemView.findViewById(R.id.recentChatTextLastMessage)
     val timeView: TextView = itemView.findViewById(R.id.recentChatTextTime)
 }
-
 
 interface onRecentChatClicked {
     fun getOnRecentChatCLicked(position: Int, chatList: RecentChats)

@@ -14,6 +14,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -52,6 +53,20 @@ class Homefragment : Fragment(), OnUserClickListener,onRecentChatClicked {
         savedInstanceState: Bundle?
     ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_home, container, false)
+
+        rvUsers = binding.rvUsers
+        rvRecentChats = binding.rvRecentChats
+
+        userAdapter = UserAdapter()
+        recentadapter = RecentChatAdapter()
+
+        val layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
+        val layoutManager2 = LinearLayoutManager(activity,LinearLayoutManager.VERTICAL,false)
+
+        rvUsers.layoutManager = layoutManager
+        rvRecentChats.layoutManager= layoutManager2
+
+
         return binding.root
     }
 
@@ -63,7 +78,9 @@ class Homefragment : Fragment(), OnUserClickListener,onRecentChatClicked {
         val logoutimage = toolbar.findViewById<ImageView>(R.id.logOut)
         circleImageView = toolbar.findViewById(R.id.tlImage)
 
+
         binding.lifecycleOwner = viewLifecycleOwner
+
         userViewModel.imageUrl.observe(viewLifecycleOwner, Observer {
 
             Glide.with(requireContext()).load(it).into(circleImageView)
@@ -80,24 +97,32 @@ class Homefragment : Fragment(), OnUserClickListener,onRecentChatClicked {
         }
 
 
-        rvUsers = view.findViewById(R.id.rvUsers)
-        rvRecentChats = view.findViewById(R.id.rvRecentChats)
-        userAdapter = UserAdapter()
-        recentadapter = RecentChatAdapter()
-
-        val layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
-        val layoutManager2 = LinearLayoutManager(activity)
-
-        rvUsers.layoutManager = layoutManager
-        rvRecentChats.layoutManager= layoutManager2
-
+        rvUsers.adapter = userAdapter
+        val isAdapterAttached = rvUsers.adapter != null
 
         userViewModel.getUsers().observe(viewLifecycleOwner, Observer {
 
             userAdapter.setList(it)
-            rvUsers.adapter = userAdapter
+
 
         })
+        userAdapter.setOnClickListener(this)
+
+        rvRecentChats.adapter = recentadapter
+        val isAdapterAttached1 = rvRecentChats.adapter != null
+
+        userViewModel.getRecentUsers().observe(viewLifecycleOwner, Observer { recentChats ->
+            if (recentChats != null) {
+                recentadapter.setOnRecentChatList(recentChats)
+            } else {
+                recentadapter.setOnRecentChatList(emptyList())
+            }
+        })
+        recentadapter.setOnRecentChatListener(this)
+
+        Log.d("ChatFragment", "Chat ,Adapter is attached: $isAdapterAttached,$isAdapterAttached1")
+
+
 
 
         circleImageView.setOnClickListener {
@@ -107,19 +132,6 @@ class Homefragment : Fragment(), OnUserClickListener,onRecentChatClicked {
         }
         userAdapter.setOnClickListener(this)
 
-
-
-        userViewModel.getRecentUsers().observe(viewLifecycleOwner, Observer {
-
-            recentadapter.setList(it)
-            rvRecentChats.adapter = recentadapter
-
-        })
-        recentadapter.setOnRecentChatListener(this)
-
-        circleImageView.setOnClickListener(){
-            view.findNavController().navigate(R.id.action_homefragment_to_settingFragment)
-        }
 
     }
 
